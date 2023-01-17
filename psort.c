@@ -305,20 +305,11 @@ void parallel_sort()
     }
 }
 
-void concat(int *a, int *b)
-{
-    return;
-}
-
 void sort()
 {
-    if (rec_n <= threshold)
-    {
-        // memcpy(output, input, sz);
-        serial_sort(sorting, sorting+rec_n-1);
-    } 
-    else 
-        parallel_sort();
+    if (rec_n <= threshold) serial_sort(sorting, sorting+rec_n-1);
+    else parallel_sort();
+    
     for (int i = 0; i < rec_n; i++)
     {
         get(output, i)->key = sorting[i].key;
