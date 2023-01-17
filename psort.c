@@ -9,7 +9,6 @@
 #include <pthread.h>
 
 const int threshold = 32;
-// pthread_mutex_t front_lock = PTHREAD_MUTEX_INITIALIZER, back_lock = PTHREAD_MUTEX_INITIALIZER;
 size_t max_bit_len = 32;
 
 // To access records cast input by rec_t
@@ -96,15 +95,6 @@ void load(char *fin, char *fout)
         fd, 
         0
     );
-
-    // output = mmap (
-    //     NULL, 
-    //     sz, 
-    //     PROT_READ | PROT_WRITE, 
-    //     MAP_SHARED | MAP_ANONYMOUS, 
-    //     fd2, 
-    //     0
-    // );
 
     output = mmap (
         0,
@@ -216,37 +206,6 @@ void bucket_sort()
     memcpy(sorting + front_n, back, back_n * sizeof(k_t));
 }
 
-// typedef struct {
-//     short index;
-//     short count;
-// } bucket_t;
-
-
-
-// void *histogram(void *arg)
-// {
-//     bucket_t *bucket = (bucket_t *)arg;
-//     for (int i = bucket->index; i < bucket->index + bucket->count; i++)
-//         histogram[sorting[i].key & bucket_mask]++;
-//     pthread_exit(NULL);
-// }
-
-// struct proccess {
-//     int start;
-//     int end;
-// };
-
-// void *bucket_sort(void *arg)
-// {
-//     bucket_t *bucket = (bucket_t *)arg;
-//     for (int i = 0; i < rec_n; i++)
-//         if (sorting[i].key & bucket_mask) 
-//             bucket->buckets[1][back_n++] = sorting[i];
-//         else 
-//             bucket->buckets[0][front_n++] = sorting[i];
-//     pthread_exit(NULL);
-// }
-
 typedef struct {
     k_t **buckets;
     int *counts;
@@ -273,14 +232,9 @@ void parallel_sort()
     // There should be a better way to do this, which will keep the cache locality in mind
     int thread_count;
     pthread_t *threads; 
-    // for (int i = 0; i < rec_n; i++)
-    //     sorting[i].key ^= 1 << 31;
+
     for (int b_i = 0; b_i < 32/2; b_i++, bucket_mask = bucket_mask << 2)
     {
-
-        // for (int i = 0; i < rec_n; i++) 
-        //     printf("%d ", sorting[i].key);
-        // printf("\n");
 
         thread_count = get_nprocs();
         int chunk_n = rec_n / thread_count;
@@ -348,15 +302,6 @@ void parallel_sort()
         // free(buckets);
         munmap(buckets, sizeof(bucket_t) * thread_count);
         
-        // bucket_sort();
-        // pthread_create(&threads[0], NULL, front_bucket, NULL);
-        // pthread_create(&threads[1], NULL, back_bucket, NULL);
-
-        // pthread_join(threads[0], NULL);
-        // pthread_join(threads[1], NULL);
-
-        // // Merge front and back
-        // memcpy(sorting + front_n, back, back_n * sizeof(k_t));
     }
 }
 
@@ -378,8 +323,6 @@ void sort()
     {
         get(output, i)->key = sorting[i].key;
         memcpy(&get(output, i)->value, sorting[i].value, 96);
-        // fsync(fd2);
-        // memcpy(get(output, i), get(input, sorting[i]), sizeof(rec_t));
     }
 }
 
